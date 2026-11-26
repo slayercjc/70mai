@@ -1,0 +1,13 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# 保留 gradle-wrapper.jar，不要忽略
+!gradle/wrapper/gradle-wrapper.jar

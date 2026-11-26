@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <!-- 标题栏 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="18dp"
+        android:text="70迈视频提取"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:background="#1565C0" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 使用说明 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="用法：手机开热点 → 后视镜连上 → 在本机点「扫描」找到后视镜 IP → 连接 → 勾选视频下载。\n如果扫描不到，可手动填 IP（在你 ES 文件管理器里能看到）。"
+                android:textColor="#546E7A"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp"
+                android:background="#FFFFFF"
+                android:padding="12dp" />
+
+            <!-- 地址与端口 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="后视镜 FTP 地址"
+                android:textColor="#37474F"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_host"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/edit_text"
+                    android:hint="例如 192.168.43.24"
+                    android:inputType="text"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:singleLine="true"
+                    android:textSize="15sp" />
+
+                <EditText
+                    android:id="@+id/et_port"
+                    android:layout_width="76dp"
+                    android:layout_height="48dp"
+                    android:layout_marginLeft="8dp"
+                    android:background="@android:drawable/edit_text"
+                    android:hint="端口"
+                    android:inputType="number"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:singleLine="true"
+                    android:text="21"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <!-- 历史地址 -->
+            <TextView
+                android:id="@+id/tv_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textColor="#1565C0"
+                android:textSize="13sp" />
+
+            <!-- 账号高级选项 -->
+            <TextView
+                android:id="@+id/tv_advanced"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="▸ 登录账号（默认匿名，一般不用改）"
+                android:textColor="#546E7A"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:id="@+id/ll_advanced"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <EditText
+                    android:id="@+id/et_user"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/edit_text"
+                    android:hint="用户名"
+                    android:paddingLeft="10dp"
+                    android:singleLine="true"
+                    android:text="anonymous"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/et_pass"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/edit_text"
+                    android:hint="密码"
+                    android:paddingLeft="10dp"
+                    android:singleLine="true"
+                    android:text="anonymous@"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- 操作按钮 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_scan"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="扫描网段"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btn_connect"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#1565C0"
+                    android:text="连接并列出视频"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:indeterminate="false"
+                android:visibility="gone" />
+
+            <!-- 状态 -->
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="就绪。先确保手机已连上后视镜热点或后视镜已连上手机热点。"
+                android:textColor="#37474F"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

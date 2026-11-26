@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- FTP 是明文协议，允许明文流量 -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

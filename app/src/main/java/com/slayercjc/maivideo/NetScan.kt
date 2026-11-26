@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.InetSocketAddress
@@ -51,7 +53,7 @@ object NetScan {
         onProgress: (scanned: Int, total: Int) -> Unit = { _, _ -> }
     ): List<ScanResult> = withContext(Dispatchers.IO) {
         val targets = (1..254).map { "$prefix.$it" }
-        val semaphore = kotlinx.coroutines.sync.Semaphore(concurrency)
+        val semaphore = Semaphore(concurrency)
         var scanned = 0
         val lock = Any()
 

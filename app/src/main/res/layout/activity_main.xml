@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="用法：① 手机开热点、后视镜连上；② 在后视镜的 ES 文件管理器里打开「PC 网络/远程管理」并启动 FTP（每次都要开）；③ 在本机点「扫描」或手动填后视镜 IP+端口（ES 默认 2121）→ 连接 → 勾选下载。"
+                android:text="用法：① 手机开热点、后视镜连上；② 在后视镜的 ES 文件管理器里打开「PC 网络/远程管理」并启动 FTP（每次都要开）；③ 在本机点「扫描」或手动填后视镜 IP+端口（老版 ES 默认 3721，地址多为 10. 开头）→ 连接 → 勾选下载。"
                 android:textColor="#546E7A"
                 android:textSize="13sp"
                 android:lineSpacingExtra="3dp"
@@ -74,12 +74,12 @@
                     android:layout_height="48dp"
                     android:layout_marginLeft="8dp"
                     android:background="@android:drawable/edit_text"
-                    android:hint="端口(默认2121)"
+                    android:hint="端口(默认3721)"
                     android:inputType="number"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
                     android:singleLine="true"
-                    android:text="2121"
+                    android:text="3721"
                     android:textSize="15sp" />
             </LinearLayout>
 

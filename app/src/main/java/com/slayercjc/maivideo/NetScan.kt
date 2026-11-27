@@ -18,17 +18,20 @@ import java.net.NetworkInterface
 import java.net.Socket
 
 /** 局域网 FTP 主机扫描：从本机所在网段里找出开放 FTP 端口的设备。
- *  后视镜上 ES 文件管理器的 FTP 服务默认端口 2121，部分版本/配置用 21，
- *  因此两个端口都探测。 */
+ *  老版本 ES「远程管理器/View on PC」FTP 默认端口 3721（智能后视镜常用），
+ *  新版 ES 用 2121，标准 FTP 用 21，三个端口都探测。 */
 object NetScan {
 
-    /** 取本机所在局域网的 /24 网段前缀。
+    /** 取本机所有可能的 /24 网段。
+     *  返回多个候选并全部扫描，避免"猜错网段"——手机开热点时蜂窝接口(10.x)
+     *  与热点接口(10.x/192.168.x)可能同段或不同段，逐一扫描最可靠。
      *  兼容两种拓扑：
-     *  1) 后视镜开热点、手机连入 —— 手机为 WiFi STA，走 TRANSPORT_WIFI
-     *  2) 手机开热点、后视镜连入 —— 手机为 AP，需枚举网卡找热点接口 */
-    fun currentSubnet(ctx: Context): String? {
+     *  1) 后视镜开热点、手机连入 —— 手机为 WiFi STA
+     *  2) 手机开热点、后视镜连入 —— 手机为 AP */
+    fun currentSubnets(ctx: Context): List<String> {
+        val result = linkedMapOf<String, Boolean>() // 网段 -> 是否高优先级(热点接口/网关)
         val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        // 1) WiFi STA 模式：手机连入热点
+        // 1) WiFi STA 模式：手机连入热点（最可信，排最前）
         if (cm != null) {
             val networks = cm.allNetworks ?: emptyArray()
             for (n: Network in networks) {
@@ -43,12 +46,11 @@ object NetScan {
                     .firstOrNull { !it.isLoopbackAddress }
                     ?.hostAddress ?: continue
                 val s = subnetOf(ip)
-                if (s != null) return s
+                if (s != null) result[s] = true
             }
         }
-        // 2) 手机开热点模式：枚举网卡，优先热点接口(ap*)与网关地址(.1)
+        // 2) 枚举所有网卡：热点接口 ap* 或 .1 网关地址优先，其余私网段也纳入
         try {
-            val candidates = mutableListOf<Pair<String, String>>()
             val ifaces = NetworkInterface.getNetworkInterfaces()
             while (ifaces.hasMoreElements()) {
                 val ni = ifaces.nextElement()
@@ -57,31 +59,23 @@ object NetScan {
                 while (addrs.hasMoreElements()) {
                     val a = addrs.nextElement()
                     if (a is Inet4Address && !a.isLoopbackAddress) {
-                        val host = a.hostAddress
-                        if (host != null) candidates.add(ni.name to host)
+                        val host = a.hostAddress ?: continue
+                        val s = subnetOf(host) ?: continue
+                        if (!isPrivateIp(host)) continue
+                        val hot = ni.name.contains("ap", ignoreCase = true) || host.endsWith(".1")
+                        if (hot || !result.containsKey(s)) result[s] = hot || (result[s] ?: false)
                     }
                 }
             }
-            val ap = candidates.firstOrNull { it.first.contains("ap", ignoreCase = true) }
-            if (ap != null) {
-                val s = subnetOf(ap.second)
-                if (s != null) return s
-            }
-            val gw = candidates.firstOrNull { it.second.endsWith(".1") }
-            if (gw != null) {
-                val s = subnetOf(gw.second)
-                if (s != null) return s
-            }
-            val priv = candidates.firstOrNull { isPrivateIp(it.second) }
-            if (priv != null) {
-                val s = subnetOf(priv.second)
-                if (s != null) return s
-            }
         } catch (_: Exception) {
-            // 枚举失败则由界面提示手动输入 IP
+            // 枚举失败时至少保留 WiFi STA 的结果
         }
-        return null
+        // 高优先级(热点/网关)在前，其余在后
+        return result.entries.sortedByDescending { it.value }.map { it.key }
     }
+
+    /** 兼容旧调用：返回第一个候选网段 */
+    fun currentSubnet(ctx: Context): String? = currentSubnets(ctx).firstOrNull()
 
     private fun subnetOf(ip: String): String? {
         val p = ip.split(".")
@@ -99,15 +93,24 @@ object NetScan {
 
     data class ScanResult(val host: String, val openPorts: List<Int>)
 
-    /** 并发扫描网段内 FTP 端口（2121 为 ES 默认，21 为备用），返回开放 FTP 的主机 */
+    /** 单网段扫描的兼容包装 */
     suspend fun scan(
         prefix: String,
-        ports: List<Int> = listOf(2121, 21),
+        ports: List<Int> = listOf(3721, 2121, 21),
+        timeoutMs: Int = 400,
+        concurrency: Int = 48,
+        onProgress: (scanned: Int, total: Int) -> Unit = { _, _ -> }
+    ): List<ScanResult> = scan(listOf(prefix), ports, timeoutMs, concurrency, onProgress)
+
+    /** 并发扫描多个网段的 FTP 端口（3721 老版 ES / 2121 新版 ES / 21 标准），返回开放 FTP 的主机 */
+    suspend fun scan(
+        prefixes: List<String>,
+        ports: List<Int> = listOf(3721, 2121, 21),
         timeoutMs: Int = 400,
         concurrency: Int = 48,
         onProgress: (scanned: Int, total: Int) -> Unit = { _, _ -> }
     ): List<ScanResult> = withContext(Dispatchers.IO) {
-        val targets = (1..254).map { "$prefix.$it" }
+        val targets = prefixes.flatMap { prefix -> (1..254).map { "$prefix.$it" } }
         val semaphore = Semaphore(concurrency)
         var scanned = 0
         val lock = Any()

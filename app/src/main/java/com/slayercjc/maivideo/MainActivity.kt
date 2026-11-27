@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
             toast("请先填后视镜 IP，或点扫描")
             return null
         }
-        val port = etPort.text.toString().trim().toIntOrNull() ?: 2121
+        val port = etPort.text.toString().trim().toIntOrNull() ?: 3721
         return FtpRepo.Config(
             host = host,
             port = port,
@@ -135,15 +135,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startScan() {
-        val prefix = NetScan.currentSubnet(this)
-        if (prefix == null) {
-            tvStatus.text = "扫描失败：未检测到 WiFi 连接。请确认手机已连上后视镜热点，或手机开热点让后视镜连入。"
+        val prefixes = NetScan.currentSubnets(this)
+        if (prefixes.isEmpty()) {
+            tvStatus.text = "扫描失败：未检测到任何局域网网段。请确认手机已连上后视镜热点，或手机开热点让后视镜连入。"
             return
         }
-        setBusy(true, "正在扫描 $prefix.1-254 的 FTP 端口…")
+        setBusy(true, "正在扫描 ${prefixes.joinToString(", ")} 的 FTP 端口…")
         progressBar.isIndeterminate = false
         lifecycleScope.launch {
-            val found = NetScan.scan(prefix) { scanned, total ->
+            val found = NetScan.scan(prefixes) { scanned, total ->
                 runOnUiThread {
                     progressBar.max = total
                     progressBar.progress = scanned
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity() {
             setBusy(false)
             if (found.isEmpty()) {
                 tvStatus.text =
-                    "在 $prefix.* 网段没找到 FTP 服务（已探测 2121 和 21 端口）。\n" +
+                    "在 ${prefixes.joinToString(", ")} 网段没找到 FTP 服务（已探测 3721、2121、21 端口）。\n" +
                     "请确认：① 手机与后视镜在同一网络；② 后视镜上的 ES 文件管理器已打开「PC 网络/远程管理」并启动了 FTP 服务（这一步每次都要做）；\n" +
                     "③ 也可以直接在上方手动输入后视镜 IP 和 ES 显示的端口。"
             } else {
@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 refreshHistoryText()
                 val first = found.first()
                 etHost.setText(first.host)
-                // 把探测到的端口自动填入（ES FTP 默认 2121）
+                // 把探测到的端口自动填入（老版 ES FTP 默认 3721）
                 first.openPorts.firstOrNull()?.let { etPort.setText(it.toString()) }
                 val desc = found.joinToString(", ") { "${it.host}:${it.openPorts.joinToString("/")}" }
                 tvStatus.text = "找到 ${hosts.size} 个 FTP 设备：$desc\n已填入第一个（含端口），点【连接并列出视频】。"
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                 withUi {
                     setBusy(false)
                     tvStatus.text = "连接失败：${e.message ?: e.javaClass.simpleName}\n" +
-                        "排查：① 后视镜 ES 文件管理器的 FTP 是否已启动（每次都要开）；② IP 是否为当前地址；③ 端口是否为 ES 显示的数字（默认 2121）；④ 账号保持匿名。"
+                        "排查：① 后视镜 ES 的 FTP 是否已启动（每次都要开）；② IP 是否为当前地址；③ 端口是否为 ES 显示的数字（老版默认 3721）；④ 账号保持匿名。"
                 }
             }
         }

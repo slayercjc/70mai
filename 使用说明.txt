@@ -16,8 +16,8 @@
 代码已推送到 https://github.com/slayercjc/70mai.git ，云端编译已成功，
 APK（2.98 MB）就在 GitHub 上，直接下载即可：
 
-1. 打开 https://github.com/slayercjc/70mai/actions/runs/45776670708
-   （或进仓库点 "Actions" → 点最上面那条绿色的运行记录 #5）
+1. 打开 https://github.com/slayercjc/70mai/actions/runs/45927137776
+   （或进仓库点 "Actions" → 点最上面那条绿色的运行记录 #7）
 2. 页面拉到底 "Artifacts" → 点 "70mai-video-grabber-debug-apk" 下载（是个 zip）
    —— 需登录 GitHub 才能下载
 3. 解压得到 app-debug.apk，传到手机安装（安装时允许「未知来源」）
@@ -67,6 +67,11 @@ A：① IP 填错——用 ES 里那个 IP；② 端口 21；③ 账号保持匿
 
 Q：扫描不到设备？
 A：手机必须连着 WiFi 或自身开热点；如果都扫不到就手动填 IP。
+   注意：后视镜 FTP 是固件内置服务，无需在后视镜装 APP、也没有开关；
+   ES 能连上就说明 FTP 在正常跑。手动填 IP 的方法：
+   - 手机开热点、后视镜连入时：设置 → 个人热点 → 已连接设备，查看后视镜当前 IP
+   - 后视镜开热点、手机连入时：就是网关 192.168.43.1 所在网段
+   后视镜每次连热点拿到的 IP 可能变化，ES 里的旧地址只能当参考，以当前查到的为准。
 
 Q：下载中断了？
 A：重新连上后，再次勾选同一个文件下载，会自动从断点续传。

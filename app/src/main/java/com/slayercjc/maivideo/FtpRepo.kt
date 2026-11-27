@@ -65,6 +65,10 @@ object FtpRepo {
     @Synchronized
     fun connect(cfg: Config): String {
         disconnect()
+        // 先做一次纯 TCP 探测：Commons Net 在连接失败时会抛出难以理解的
+        // "setSoTimeout on a null object" 错误，这里提前拦截并给出明确原因。
+        probeTcp(cfg.host, cfg.port)
+
         val c = FTPClient()
         c.connectTimeout = 8000
         c.defaultTimeout = 15000
@@ -72,7 +76,12 @@ object FtpRepo {
         c.controlEncoding = "UTF-8"
         c.autodetectUTF8 = true
 
-        c.connect(cfg.host, cfg.port)
+        try {
+            c.connect(cfg.host, cfg.port)
+        } catch (e: Exception) {
+            try { c.disconnect() } catch (_: Exception) {}
+            throw IOException("FTP 握手失败：${e.message ?: e.javaClass.simpleName}（检查 IP/端口是否正确）")
+        }
         val system = try { c.systemName } catch (_: Exception) { null }
         val ok = c.login(cfg.user, cfg.password)
         if (!ok) {
@@ -83,6 +92,28 @@ object FtpRepo {
         c.setFileType(FTP.BINARY_FILE_TYPE)
         client = c
         return system?.takeIf { it.isNotBlank() } ?: "FTP 连接成功"
+    }
+
+    /**
+     * 纯 TCP 连通性探测，失败时抛出可读的中文错误。
+     * 区分：主机不可达 / 连接被拒绝（端口没开）/ 超时 / 地址格式错误。
+     */
+    private fun probeTcp(host: String, port: Int) {
+        if (host.isBlank()) throw IOException("IP 不能为空，请先扫描或手动填写后视镜地址")
+        val socket = java.net.Socket()
+        try {
+            socket.connect(java.net.InetSocketAddress(host, port), 6000)
+        } catch (e: java.net.SocketTimeoutException) {
+            throw IOException("连接超时：$host:$port 无响应。检查后视镜是否在线、是否同一网络")
+        } catch (e: java.net.ConnectException) {
+            throw IOException("连接被拒绝：$host:$port 没有服务监听。后视镜 FTP 未启动，或 IP/端口填错")
+        } catch (e: java.net.UnknownHostException) {
+            throw IOException("无法解析地址：$host，请填写 IP 数字")
+        } catch (e: IOException) {
+            throw IOException("网络不通：$host:$port（${e.message ?: e.javaClass.simpleName}）。确认手机与后视镜在同一 WiFi/热点")
+        } finally {
+            try { socket.close() } catch (_: Exception) {}
+        }
     }
 
     @Synchronized

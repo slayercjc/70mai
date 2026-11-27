@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
             toast("请先填后视镜 IP，或点扫描")
             return null
         }
-        val port = etPort.text.toString().trim().toIntOrNull() ?: 21
+        val port = etPort.text.toString().trim().toIntOrNull() ?: 2121
         return FtpRepo.Config(
             host = host,
             port = port,
@@ -153,16 +153,20 @@ class MainActivity : AppCompatActivity() {
             setBusy(false)
             if (found.isEmpty()) {
                 tvStatus.text =
-                    "在 $prefix.* 网段没找到 FTP 服务。\n" +
-                    "请确认：① 手机与后视镜在同一网络；② 后视镜的 FTP/文件共享功能已打开；\n" +
-                    "③ 也可以直接在上方手动输入你 ES 里看到的那个 IP。"
+                    "在 $prefix.* 网段没找到 FTP 服务（已探测 2121 和 21 端口）。\n" +
+                    "请确认：① 手机与后视镜在同一网络；② 后视镜上的 ES 文件管理器已打开「PC 网络/远程管理」并启动了 FTP 服务（这一步每次都要做）；\n" +
+                    "③ 也可以直接在上方手动输入后视镜 IP 和 ES 显示的端口。"
             } else {
                 val hosts = found.map { it.host }
                 history.addAll(hosts.filterNot { history.contains(it) })
                 prefs.edit().putString("history", history.joinToString(",")).apply()
                 refreshHistoryText()
-                etHost.setText(hosts.first())
-                tvStatus.text = "找到 ${hosts.size} 个 FTP 设备：${hosts.joinToString(", ")}\n已填入第一个，点【连接并列出视频】。"
+                val first = found.first()
+                etHost.setText(first.host)
+                // 把探测到的端口自动填入（ES FTP 默认 2121）
+                first.openPorts.firstOrNull()?.let { etPort.setText(it.toString()) }
+                val desc = found.joinToString(", ") { "${it.host}:${it.openPorts.joinToString("/")}" }
+                tvStatus.text = "找到 ${hosts.size} 个 FTP 设备：$desc\n已填入第一个（含端口），点【连接并列出视频】。"
                 toast("发现 ${hosts.size} 个设备")
             }
         }
@@ -186,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                 withUi {
                     setBusy(false)
                     tvStatus.text = "连接失败：${e.message ?: e.javaClass.simpleName}\n" +
-                        "排查：IP 是否正确、后视镜 FTP 是否开启、账号是否匿名、端口是否为 21。"
+                        "排查：① 后视镜 ES 文件管理器的 FTP 是否已启动（每次都要开）；② IP 是否为当前地址；③ 端口是否为 ES 显示的数字（默认 2121）；④ 账号保持匿名。"
                 }
             }
         }

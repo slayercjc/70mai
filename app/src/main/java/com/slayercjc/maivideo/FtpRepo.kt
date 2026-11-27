@@ -10,13 +10,13 @@ import java.io.OutputStream
 
 /**
  * FTP 连接与文件操作封装。
- * 70迈后视镜的 FTP 服务通常是匿名登录、被动模式、21 端口。
+ * 后视镜上 ES 文件管理器开启的 FTP 服务：匿名登录、被动模式、默认端口 2121。
  */
 object FtpRepo {
 
     data class Config(
         val host: String,
-        val port: Int = 21,
+        val port: Int = 2121,
         val user: String = "anonymous",
         val password: String = "anonymous@",
         val startDir: String = "/"
@@ -44,7 +44,7 @@ object FtpRepo {
     fun loadConfig(ctx: Context): Config = with(prefs(ctx)) {
         Config(
             host = getString("host", "") ?: "",
-            port = getInt("port", 21),
+            port = getInt("port", 2121),
             user = getString("user", "anonymous") ?: "anonymous",
             password = getString("pass", "anonymous@") ?: "anonymous@",
             startDir = getString("startDir", "/") ?: "/"

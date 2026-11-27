@@ -17,7 +17,9 @@ import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.Socket
 
-/** 局域网 FTP 主机扫描：从本机所在网段里找出开 21 端口的设备 */
+/** 局域网 FTP 主机扫描：从本机所在网段里找出开放 FTP 端口的设备。
+ *  后视镜上 ES 文件管理器的 FTP 服务默认端口 2121，部分版本/配置用 21，
+ *  因此两个端口都探测。 */
 object NetScan {
 
     /** 取本机所在局域网的 /24 网段前缀。
@@ -97,10 +99,10 @@ object NetScan {
 
     data class ScanResult(val host: String, val openPorts: List<Int>)
 
-    /** 并发扫描网段内 21 端口，返回开放 FTP 的主机 */
+    /** 并发扫描网段内 FTP 端口（2121 为 ES 默认，21 为备用），返回开放 FTP 的主机 */
     suspend fun scan(
         prefix: String,
-        ports: List<Int> = listOf(21),
+        ports: List<Int> = listOf(2121, 21),
         timeoutMs: Int = 400,
         concurrency: Int = 48,
         onProgress: (scanned: Int, total: Int) -> Unit = { _, _ -> }

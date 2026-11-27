@@ -89,7 +89,7 @@ class DownloadService : Service() {
                 }
                 val cfg = FtpRepo.Config(
                     host = host,
-                    port = intent.getIntExtra(EXTRA_PORT, 21),
+                    port = intent.getIntExtra(EXTRA_PORT, 2121),
                     user = intent.getStringExtra(EXTRA_USER) ?: "anonymous",
                     password = intent.getStringExtra(EXTRA_PASS) ?: "anonymous@"
                 )

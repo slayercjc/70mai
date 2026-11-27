@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="用法：① 手机开热点、后视镜连上；② 在后视镜的 ES 文件管理器里打开「PC 网络/远程管理」并启动 FTP（每次都要开）；③ 在本机点「扫描」或手动填后视镜 IP+端口（老版 ES 默认 3721，地址多为 10. 开头）→ 连接 → 勾选下载。"
+                android:text="用法：① 手机开热点让后视镜连上（或两者同连家里 WiFi）；② 后视镜端 FTP 要开着——装了「70迈FTP服务」会自动开，否则需在后视镜 ES 里点「PC 网络/远程管理」启动；③ 在本机点「扫描」或手动填后视镜【当前】IP+端口（默认 3721）→ 连接 → 勾选下载。IP 每次联网可能变化，务必用当前地址。"
                 android:textColor="#546E7A"
                 android:textSize="13sp"
                 android:lineSpacingExtra="3dp"

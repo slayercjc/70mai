@@ -14,32 +14,85 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.InetSocketAddress
+import java.net.NetworkInterface
 import java.net.Socket
 
-/** 局域网 FTP 主机扫描：从手机当前 WiFi 网段里找出开 21 端口的设备 */
+/** 局域网 FTP 主机扫描：从本机所在网段里找出开 21 端口的设备 */
 object NetScan {
 
-    /** 取手机当前 WiFi 的 IPv4 与网关，得到 /24 网段前缀 */
+    /** 取本机所在局域网的 /24 网段前缀。
+     *  兼容两种拓扑：
+     *  1) 后视镜开热点、手机连入 —— 手机为 WiFi STA，走 TRANSPORT_WIFI
+     *  2) 手机开热点、后视镜连入 —— 手机为 AP，需枚举网卡找热点接口 */
     fun currentSubnet(ctx: Context): String? {
         val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-            ?: return null
-        // 优先取 WiFi 网络
-        val networks = cm.allNetworks ?: emptyArray()
-        for (n: Network in networks) {
-            val caps = try { cm.getNetworkCapabilities(n) } catch (_: Exception) { null }
-                ?: continue
-            if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) continue
-            val lp: LinkProperties = try { cm.getLinkProperties(n) } catch (_: Exception) { null }
-                ?: continue
-            val ip = lp.linkAddresses
-                .map { it.address }
-                .filterIsInstance<Inet4Address>()
-                .firstOrNull { !it.isLoopbackAddress }
-                ?.hostAddress ?: continue
-            val parts = ip.split(".")
-            if (parts.size == 4) return "${parts[0]}.${parts[1]}.${parts[2]}"
+        // 1) WiFi STA 模式：手机连入热点
+        if (cm != null) {
+            val networks = cm.allNetworks ?: emptyArray()
+            for (n: Network in networks) {
+                val caps = try { cm.getNetworkCapabilities(n) } catch (_: Exception) { null }
+                    ?: continue
+                if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) continue
+                val lp: LinkProperties = try { cm.getLinkProperties(n) } catch (_: Exception) { null }
+                    ?: continue
+                val ip = lp.linkAddresses
+                    .map { it.address }
+                    .filterIsInstance<Inet4Address>()
+                    .firstOrNull { !it.isLoopbackAddress }
+                    ?.hostAddress ?: continue
+                val s = subnetOf(ip)
+                if (s != null) return s
+            }
+        }
+        // 2) 手机开热点模式：枚举网卡，优先热点接口(ap*)与网关地址(.1)
+        try {
+            val candidates = mutableListOf<Pair<String, String>>()
+            val ifaces = NetworkInterface.getNetworkInterfaces()
+            while (ifaces.hasMoreElements()) {
+                val ni = ifaces.nextElement()
+                if (!ni.isUp) continue
+                val addrs = ni.inetAddresses
+                while (addrs.hasMoreElements()) {
+                    val a = addrs.nextElement()
+                    if (a is Inet4Address && !a.isLoopbackAddress) {
+                        val host = a.hostAddress
+                        if (host != null) candidates.add(ni.name to host)
+                    }
+                }
+            }
+            val ap = candidates.firstOrNull { it.first.contains("ap", ignoreCase = true) }
+            if (ap != null) {
+                val s = subnetOf(ap.second)
+                if (s != null) return s
+            }
+            val gw = candidates.firstOrNull { it.second.endsWith(".1") }
+            if (gw != null) {
+                val s = subnetOf(gw.second)
+                if (s != null) return s
+            }
+            val priv = candidates.firstOrNull { isPrivateIp(it.second) }
+            if (priv != null) {
+                val s = subnetOf(priv.second)
+                if (s != null) return s
+            }
+        } catch (_: Exception) {
+            // 枚举失败则由界面提示手动输入 IP
         }
         return null
+    }
+
+    private fun subnetOf(ip: String): String? {
+        val p = ip.split(".")
+        return if (p.size == 4) "${p[0]}.${p[1]}.${p[2]}" else null
+    }
+
+    private fun isPrivateIp(ip: String): Boolean {
+        val p = ip.split(".").mapNotNull { it.toIntOrNull() }
+        if (p.size != 4) return false
+        return p[0] == 10 ||
+                (p[0] == 172 && p[1] in 16..31) ||
+                (p[0] == 192 && p[1] == 168) ||
+                (p[0] == 169 && p[1] == 254)
     }
 
     data class ScanResult(val host: String, val openPorts: List<Int>)

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 用系统自带 Holo 主题（API 14+），兼容 Android 4.x，不依赖 AndroidX/AppCompat -->
+    <style name="FtpTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:textColorPrimary">#333333</item>
+    </style>
+</resources>

@@ -65,11 +65,20 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: 上传 APK
+      - name: 上传手机端 APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: 70mai-video-grabber-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: 上传后视镜端 FTP Server APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 70mai-mirror-ftpserver-apk
+          path: ftpserver/build/outputs/apk/debug/ftpserver-debug.apk
           retention-days: 30
           if-no-files-found: error

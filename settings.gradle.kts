@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "70maiVideoGrabber"
 include(":app")
+include(":ftpserver")

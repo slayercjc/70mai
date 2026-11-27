@@ -14,7 +14,8 @@ class BootReceiver : BroadcastReceiver() {
             action == Intent.ACTION_LOCKED_BOOT_COMPLETED ||
             action == "android.net.conn.CONNECTIVITY_CHANGE"
         ) {
-            val i = Intent(context, FtpService::class.java).apply { action = FtpService.ACTION_START }
+            val i = Intent(context, FtpService::class.java)
+            i.action = FtpService.ACTION_START
             try {
                 if (Build.VERSION.SDK_INT >= 26) {
                     context.startForegroundService(i)

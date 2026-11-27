@@ -20,8 +20,8 @@
 代码已推送到 https://github.com/slayercjc/70mai.git ，云端编译已成功，
 APK（2.98 MB）就在 GitHub 上，直接下载即可：
 
-1. 打开 https://github.com/slayercjc/70mai/actions/runs/45969004923
-   （或进仓库点 "Actions" → 点最上面那条绿色的运行记录 #9）
+1. 打开 https://github.com/slayercjc/70mai/actions/runs/45971849946
+   （或进仓库点 "Actions" → 点最上面那条绿色的运行记录 #11）
 2. 页面拉到底 "Artifacts" → 点 "70mai-video-grabber-debug-apk" 下载（是个 zip）
    —— 需登录 GitHub 才能下载
 3. 解压得到 app-debug.apk，传到手机安装（安装时允许「未知来源」）

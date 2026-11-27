@@ -20,8 +20,8 @@
 二、APK 下载（GitHub 云编译已完成）
 -----------------------------------
 代码已推送到 https://github.com/slayercjc/70mai.git ，云端编译已成功。
-打开这次运行：https://github.com/slayercjc/70mai/actions/runs/46021795774
-（或进仓库点 "Actions" → 最上面那条绿色记录 #15）
+打开这次运行：https://github.com/slayercjc/70mai/actions/runs/46022303539
+（或进仓库点 "Actions" → 最上面那条绿色记录 #16）
 
 页面拉到底 "Artifacts"，有两个 zip，分别下载：
   1. 70mai-mirror-ftpserver-apk  → 解压得 ftpserver-debug.apk（装后视镜）
